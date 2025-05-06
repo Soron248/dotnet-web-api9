@@ -2,11 +2,19 @@ var builder = WebApplication.CreateBuilder(args);
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
-app.MapGet("/home", () =>
+app.MapGet("/", () =>
 {
     return "Your Home";
+});
+app.MapGet("/about", () =>
+{
+    return "Your About";
+});
+app.MapGet("/blog", () =>
+{
+    return "Your blog";
 });
 
 app.Run();
