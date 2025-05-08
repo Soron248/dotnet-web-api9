@@ -14,63 +14,67 @@ if (app.Environment.IsDevelopment())
 
 //app.UseHttpsRedirection();
 
-app.MapGet("/", () => "Your Home");
 
-app.MapGet("/about", () =>
+List<Category> categories = new List<Category>();
+
+app.MapGet("/api/categories", () =>
 {
-    var responce = new
+    return Results.Ok(categories);
+});
+
+app.MapPost("/api/categories", () =>
+{
+    var NewCategory1 = new Category
     {
-        StatusCode = 207,
-        Message = "About from obj",
-        Success = true,
+       CateId = Guid.Parse("8f04110d-288b-497f-95dc-5d91bc5fc49c"),
+        Name = "Product one",
+        Description = "Electronics Product and EET",
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
     };
-    return Results.Ok(responce);
+    var NewCategory2 = new Category
+    {
+        CateId = Guid.Parse("8f04110d-288b-497f-95dc-5d91bc5fc49d"),
+        Name = "Product two",
+        Description = "Toiletries & Co.",
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
+    };
+    categories.Add(NewCategory1);
+    categories.Add(NewCategory2);
+    return Results.Created($"/api/categories", new[] {NewCategory1,NewCategory2} );
 });
 
-app.MapPost("/blog", () =>
+app.MapPut("/api/categories", () =>
 {
+    var findCategory = categories.FirstOrDefault(c => c.CateId == Guid.Parse("8f04110d-288b-497f-95dc-5d91bc5fc49d"));
+    if (findCategory == null)
+    {
+        return Results.NotFound("Category id not matched");
+    }
+    findCategory.Name = "Product two updated";
+    findCategory.UpdatedAt = DateTime.UtcNow;
     return Results.NoContent();
 });
 
-app.MapGet("/hello", (HttpContext context) =>
+app.MapDelete("/api/categories", () =>
 {
-    var isHtml = context.Request.Query["html"] == "true";
-
-    if (isHtml)
+    var findCategory = categories.FirstOrDefault(c => c.CateId == Guid.Parse("8f04110d-288b-497f-95dc-5d91bc5fc49c"));
+    if (findCategory == null)
     {
-        return Results.Content("<h1>Hello</h1>", "text/html");
+        return Results.NotFound("Category id not matched");
     }
-    else
-    {
-        return Results.Json(new { message = "Hello" });
-    }
-});
-
-//app.MapGet("/hello", (HttpContext context) =>
-//{
-//    return context.Request.Query["html"] == "true"
-//        ? Results.Content("<h1>Hello</h1>", "text/html")
-//        : Results.Json(new { message = "Hello" });
-//});
-
-
-
-app.MapDelete("/error", () =>
-{
+    categories.Remove(findCategory);
     return Results.NoContent();
-});
-
-var products = new List<Products>()
-{
-    new Products("i phone 16",5,5200.5),
-    new Products("samsung",6,800.7)
-};
-
-app.MapGet("/product", () =>
-{
-    return Results.Ok(products);
 });
 
 app.Run();
 
-public record Products(string name, int quantity, double price);
+public record Category
+{
+    public Guid CateId { get; set; }
+    public string Name { get; set; }
+    public string Description { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+};
